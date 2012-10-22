@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
 
-# TODO ask for sudo
-# TODO change chmod for site to user:main group
-
 shopt -s extglob
 
 # Default paths
@@ -22,6 +19,7 @@ SITE=""
 SUB_PATH=""
 SITE_PATH=""
 APACHE_SERVER_NAME=""
+
 
 # Print usage syntax
 function print_syntax() {
@@ -174,7 +172,7 @@ function setup_apache_server_name() {
 
 # Add and enable site apache
 function add_site_to_apache() {
-cat << EOF > /etc/apache2/sites-available/$APACHE_SERVER_NAME
+cat << EOF | sudo tee /etc/apache2/sites-available/$APACHE_SERVER_NAME
 <VirtualHost *:80>
     ServerName $APACHE_SERVER_NAME
     DocumentRoot $SITE_PATH
@@ -187,12 +185,13 @@ cat << EOF > /etc/apache2/sites-available/$APACHE_SERVER_NAME
     </Directory>
 </VirtualHost>
 EOF
-a2ensite $APACHE_SERVER_NAME
-service apache2 restart
+sudo a2ensite $APACHE_SERVER_NAME
+sudo service apache2 restart
 }
 
 
 # Main
+
 init $@    # Call init and shit array
 shift $__shift_nr
 
@@ -201,7 +200,6 @@ setup_site_path
 setup_apache_server_name
 add_site_to_apache
 cd $SITE_PATH
-
 
 
 # Add template to site if true
@@ -213,8 +211,11 @@ fi
 # GIT
 if $GIT; then
     git init
-    git add .
-    git commit -m "Project created"
+
+    if [ "$(ls -A . 2> /dev/null)" != "" ]; then
+	git add .
+	git commit -m "Project created"
+    fi
 fi
 
 echo
