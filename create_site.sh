@@ -1,8 +1,12 @@
 #!/usr/bin/env bash
+
+# TODO ask for sudo
+# TODO change chmod for site to user:main group
+
 shopt -s extglob
 
 # Default paths
-ROOT_PATH="/usr/www"
+ROOT_PATH="/var/www"
 TEMPLATE_PATH=$ROOT_PATH
 
 # Other default variables
@@ -170,20 +174,20 @@ function setup_apache_server_name() {
 
 # Add and enable site apache
 function add_site_to_apache() {
-cat << EOF >> /etc/apache2/sites-available/$SITE
+cat << EOF > /etc/apache2/sites-available/$APACHE_SERVER_NAME
 <VirtualHost *:80>
     ServerName $APACHE_SERVER_NAME
     DocumentRoot $SITE_PATH
 
     <Directory $SITE_PATH/>
-        Option Indexes FollowSymLinks MultiViews
+        Options Indexes FollowSymLinks MultiViews
         AllowOverride None
         Order allow,deny
         allow from all
     </Directory>
 </VirtualHost>
 EOF
-a2ensite
+a2ensite $APACHE_SERVER_NAME
 service apache2 restart
 }
 
